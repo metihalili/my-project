@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="sq">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projekti: Sistem Rezervimi Kinema</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> <!-- For PDF generation -->
+  <style>
+    .seat {
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .available {
+      background-color: green;
+      color: white;
+    }
+
+    .reserved {
+      background-color: red;
+      color: white;
+      cursor: not-allowed;
+    }
+
+    .seat-container {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    /* Center the modal */
+    .centered {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+
+    .ticket-container {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 text-gray-800 font-sans">
+  <div class="max-w-4xl mx-auto py-10 px-6">
+    <h1 class="text-4xl font-bold text-center text-blue-700 mb-8">🎬 Projekti C++: Sistem Rezervimi në Kinema</h1>
+
+    <div class="bg-white p-6 rounded-2xl shadow-md mb-6">
+      <h2 class="text-2xl font-semibold mb-2 underline">📌 Qëllimi i Projektit</h2>
+      <p>Krijimi i një aplikacioni në gjuhën C++ për të menaxhuar rezervimet e vendeve në një sallë kinema. Përdoruesi mund të rezervojë, anulojë dhe të shikojë vendet e lira për çdo seancë.</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-md mb-6">
+      <h2 class="text-2xl font-semibold mb-2 underline">🧪 Teknologjitë e Përdorura</h2>
+      <ul class="list-disc ml-5">
+        <li>C++ (struktura, funksione, matrica 2D)</li>
+        <li>Terminal/CLI</li>
+        <li>File handling për gjenerimin e biletave</li>
+      </ul>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-md mb-6">
+      <h2 class="text-2xl font-semibold mb-2 underline">📂 Struktura Kryesore: <code>Seance</code></h2>
+      <pre class="bg-gray-100 p-3 rounded-md overflow-x-auto text-sm">
+struct Seance {
+  string movieName;
+  string time;
+  bool reserved[5][5];
+  string reservedBy[5][5];
+};</pre>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-md mb-6">
+      <h2 class="text-2xl font-semibold mb-2 underline">⚙️ Funksionalitetet</h2>
+      <ul class="list-disc ml-5">
+        <li>Shfaqja e seancave dhe vendeve</li>
+        <li>Rezervimi i vendit</li>
+        <li>Anulimi i rezervimit</li>
+        <li>Gjenerimi automatik i biletës në file tekst</li>
+      </ul>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-md mb-6">
+      <h2 class="text-2xl font-semibold mb-2 underline">🎟️ Shembull Biletë (Output File)</h2>
+      <pre class="bg-gray-100 p-3 rounded-md overflow-x-auto text-sm">
+-----------------------------
+      🎬 BILETA KINEMA      
+-----------------------------
+Emri:      Ardit
+Filmi:     Avengers: Endgame
+Ora:       18:00
+Rreshti:   2
+Karrigia:  3
+-----------------------------
+  Faleminderit per rezervimin!
+      </pre>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-md">
+      <h2 class="text-2xl font-semibold mb-2 underline">🔚 Përfundim dhe Përmirësime</h2>
+      <p>Ky projekt mund të zgjerohet me:</p>
+      <ul class="list-disc ml-5">
+        <li>Ruajtje të rezervimeve në databazë</li>
+        <li>Ndërfaqe grafike me GUI ose Web</li>
+        <li>Sistem për përdorues të regjistruar dhe statistika</li>
+      </ul>
+    </div>
+
+    <!-- Button to trigger Cinema Reservation -->
+    <div class="flex justify-center my-8">
+      <button type="button" onclick="openReservation()" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+        Rezervo në Kinema
+      </button>
+    </div>
+    <div class="flex justify-center my-8">
+        <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"><a href="kodi.html">Shiko Kodin Ne C++</a></button>
+    </div>
+
+    <!-- Cinema Reservation Modal -->
+    <div id="reservation-modal" class="hidden bg-gray-800 bg-opacity-50 fixed inset-0 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-2xl shadow-md w-1/2 centered">
+        <div class="w-full">
+          <h2 class="text-2xl font-semibold mb-4">🎬 Rezervimi i Vendeve</h2>
+
+          <!-- Movie Selection -->
+          <div class="text-center">
+            <label for="movies" class="text-lg">Zgjidhni Filmin:</label>
+            <select id="movies" class="mt-2 p-2 border border-gray-300 rounded-md mb-4">
+              <option value="0">Avengers: Endgame</option>
+              <option value="1">The Matrix</option>
+            </select>
+          </div>
+
+          <!-- Seat grid -->
+          <div id="seats-container" class="seat-container"></div>
+
+          <!-- User Details and Reserve Button -->
+          <div class="mt-4 text-center">
+            <label for="username" class="text-lg">Emri juaj:</label>
+            <input type="text" id="username" class="p-2 border border-gray-300 rounded-md" placeholder="Shkruaj emrin tuaj">
+            <button id="reserve-btn" class="text-white bg-green-600 hover:bg-green-700 font-medium rounded-lg text-sm px-5 py-2.5 mt-4" onclick="reserve()">Rezervo Vendin</button>
+          </div>
+
+          <!-- Ticket Information and Download Button -->
+          <div id="ticket" class="ticket-container mt-6 text-center hidden">
+            <h3 class="text-xl font-semibold">Bileta juaj:</h3>
+            <pre id="ticket-info"></pre>
+            <button id="download-btn" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 mt-4">Shkarko Bileten</button>
+          </div>
+
+          <button onclick="closeReservation()" class="mt-4 text-white bg-red-600 hover:bg-red-700 font-medium rounded-lg text-sm px-5 py-2.5">Mbylle</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-center text-sm text-gray-500 mt-10">© 2025 Projekti i Shkollës – Sistemi i Kinemasë me C++ prof-Lindiar Miftari</p>
+  </div>
+
+  <script>
+    const ROWS = 5;
+    const COLS = 5;
+
+    const movies = [
+      { name: 'Avengers: Endgame', time: '18:00' },
+      { name: 'The Matrix', time: '20:00' }
+    ];
+
+    let selectedMovie = 0;
+    const seats = [
+      Array(ROWS).fill(Array(COLS).fill(false)),
+      Array(ROWS).fill(Array(COLS).fill(false))
+    ];
+
+    // Open reservation modal
+    function openReservation() {
+      document.getElementById('reservation-modal').classList.remove('hidden');
+      showSeats();
+    }
+
+    // Close reservation modal
+    function closeReservation() {
+      document.getElementById('reservation-modal').classList.add('hidden');
+    }
+
+    // Show seats grid
+    function showSeats() {
+      const container = document.getElementById('seats-container');
+      container.innerHTML = '';  // Clear any previous seats
+
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+          const seat = document.createElement('div');
+          seat.classList.add('seat', seats[selectedMovie][row][col] ? 'reserved' : 'available');
+          seat.innerText = `${row + 1}-${col + 1}`;
+          seat.onclick = () => reserveSeat(row, col);
+          container.appendChild(seat);
+        }
+      }
+    }
+
+    // Handle seat reservation
+    function reserveSeat(row, col) {
+      if (seats[selectedMovie][row][col]) return; // Seat already reserved
+
+      // Highlight the selected seat visually
+      const selectedSeat = document.querySelector(`#seats-container div:nth-child(${row * COLS + col + 1})`);
+      selectedSeat.classList.add('bg-yellow-400');
+    }
+
+    // Handle reservation when the user clicks the "Rezervo Vendin" button
+    function reserve() {
+      const username = document.getElementById('username').value;
+      if (!username) {
+        alert('Ju lutem, shkruani emrin tuaj!');
+        return;
+      }
+
+      const selectedSeat = document.querySelector('.bg-yellow-400');
+      if (!selectedSeat) {
+        alert('Ju lutem, zgjidhni një vend!');
+        return;
+      }
+
+      // Get the row and column of the selected seat
+      const seatText = selectedSeat.innerText;
+      const [row, col] = seatText.split('-').map(num => parseInt(num) - 1);
+
+      seats[selectedMovie][row][col] = true; // Mark the seat as reserved
+
+      const ticketInfo = `
+        Filmi: ${movies[selectedMovie].name}
+        Ora: ${movies[selectedMovie].time}
+        Rreshti: ${row + 1}
+        Karrigia: ${col + 1}
+        Rezervuar nga: ${username}
+      `;
+      document.getElementById('ticket-info').innerText = ticketInfo;
+      document.getElementById('ticket').classList.remove('hidden');
+      document.getElementById('download-btn').classList.remove('hidden');
+      showSeats();  // Update seat layout
+    }
+
+    // Generate PDF for ticket
+    document.getElementById('download-btn').onclick = function () {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const ticketInfo = document.getElementById('ticket-info').innerText;
+
+      doc.text(ticketInfo, 10, 10);
+      doc.save('bileta.pdf');
+    }
+  </script>
+</body>
+
+</html>

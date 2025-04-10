@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <title>Cinema Reservation System</title>
+</head>
+
+<body class="bg-gray-100 font-sans">
+  <div class="container mx-auto px-6 py-12">
+    <!-- Header Section -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-blue-600">Cinema Seat Reservation System</h1>
+      <p class="text-lg text-gray-700 mt-2">Manage your movie reservations effortlessly with our simple seat management system.</p>
+    </header>
+
+    <!-- Code Section -->
+    <section class="bg-white rounded-lg shadow-lg p-8">
+      <div class="text-center mb-6">
+        <p class="text-xl font-semibold text-gray-900">Here’s the source code for the Cinema Reservation system:</p>
+      </div>
+
+      <div class="font-mono bg-zinc-800 text-white p-5 rounded-lg overflow-x-auto mt-5">
+        <h1 class="text-xl mb-2">C++ Code:</h1>
+        <pre id="code-content" class="text-sm">
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+#include &lt;iomanip&gt;
+using namespace std;
+
+const int ROWS = 5;
+const int COLS = 5;
+
+struct Seance {
+    string movieName;
+    string time;
+    bool reserved[ROWS][COLS];
+    string reservedBy[ROWS][COLS];
+};
+
+void initializeSeats(Seance &s) {
+    for (int i = 0; i &lt; ROWS; i++)
+        for (int j = 0; j &lt; COLS; j++) {
+            s.reserved[i][j] = false;
+            s.reservedBy[i][j] = "";
+        }
+}
+
+void showSeats(const Seance &s) {
+    cout &lt;&lt; &quot;\nVendet per &quot; &lt;&lt; s.movieName &lt;&lt; &quot; ne oren &quot; &lt;&lt; s.time &lt;&lt; &quot;:&quot; &lt;&lt; endl;
+    cout &lt;&lt; &quot;               &quot;;
+    for (int j = 0; j &lt; COLS; j++) cout &lt;&lt; setw(4) &lt;&lt; j+1;
+    cout &lt;&lt; &quot;\n&quot;;
+    for (int i = 0; i &lt; ROWS; i++) {
+        cout &lt;&lt; &quot;Rreshti &quot; &lt;&lt; setw(2) &lt;&lt; i+1;
+        for (int j = 0; j &lt; COLS; j++) {
+            if (s.reserved[i][j])
+                cout &lt;&lt; setw(4) &lt;&lt; &quot;X&quot;;
+            else
+                cout &lt;&lt; setw(4) &lt;&lt; &quot;L&quot;;
+        }
+        cout &lt;&lt; &quot;\n&quot;;
+    }
+}
+
+void generateTicket(const string &name, const Seance &s, int row, int col) {
+    string fileName = "bileta_" + name + ".txt";
+    ofstream ticket(fileName);
+    if (!ticket) {
+        cout &lt;&lt; "Gabim gjate krijimit te biletës!\n";
+        return;
+    }
+
+    ticket &lt;&lt; "-----------------------------\n";
+    ticket &lt;&lt; "      🎬 BILETA KINEMA      \n";
+    ticket &lt;&lt; "-----------------------------\n";
+    ticket &lt;&lt; "Emri:      " &lt;&lt; name &lt;&lt; "\n";
+    ticket &lt;&lt; "Filmi:     " &lt;&lt; s.movieName &lt;&lt; "\n";
+    ticket &lt;&lt; "Ora:       " &lt;&lt; s.time &lt;&lt; "\n";
+    ticket &lt;&lt; "Rreshti:   " &lt;&lt; row &lt;&lt; "\n";
+    ticket &lt;&lt; "Karrigia:  " &lt;&lt; col &lt;&lt; "\n";
+    ticket &lt;&lt; "-----------------------------\n";
+    ticket &lt;&lt; "  Faleminderit per rezervimin!\n";
+    ticket.close();
+
+    cout &lt;&lt; "Bileta u krijua ne file-in: " &lt;&lt; fileName &lt;&lt; "\n";
+}
+
+bool reserveSeat(Seance &s, int row, int col, const string &userName) {
+    if (row &lt; 1 || row &gt; ROWS || col &lt; 1 || col &gt; COLS) {
+        cout &lt;&lt; "Pozicion i pavlefshem!\n";
+        return false;
+    }
+    if (s.reserved[row-1][col-1]) {
+        cout &lt;&lt; "Ky vend eshte i zene nga: " &lt;&lt; s.reservedBy[row-1][col-1] &lt;&lt; "\n";
+        return false;
+    }
+
+    s.reserved[row-1][col-1] = true;
+    s.reservedBy[row-1][col-1] = userName;
+    cout &lt;&lt; "Rezervimi u krye me sukses nga " &lt;&lt; userName &lt;&lt; "!\n";
+    generateTicket(userName, s, row, col);
+    return true;
+}
+
+bool cancelReservation(Seance &s, int row, int col, const string &userName) {
+    if (row &lt; 1 || row &gt; ROWS || col &lt; 1 || col &gt; COLS) {
+        cout &lt;&lt; "Pozicion i pavlefshem!\n";
+        return false;
+    }
+    if (!s.reserved[row-1][col-1]) {
+        cout &lt;&lt; "Ky vend nuk eshte rezervuar!\n";
+        return false;
+    }
+    if (s.reservedBy[row-1][col-1] != userName) {
+        cout &lt;&lt; "Rezervimi nuk eshte i juaji!\n";
+        return false;
+    }
+
+    s.reserved[row-1][col-1] = false;
+    s.reservedBy[row-1][col-1] = "";
+    cout &lt;&lt; "Rezervimi u anulua me sukses!\n";
+    return true;
+}
+
+// Funksion bosh — nuk ruan asgje
+void saveReservations(const Seance seances[], int numSeances) {
+    // Nuk behet ruajtje
+}
+
+int main() {
+    const int NUM_SEANCES = 2;
+    Seance seances[NUM_SEANCES] = {
+        {"Avengers: Endgame", "18:00"},
+        {"The Matrix", "20:00"}
+    };
+
+    for (int i = 0; i &lt; NUM_SEANCES; i++) {
+        initializeSeats(seances[i]);
+    }
+
+    int choice;
+    do {
+        cout &lt;&lt; "\n----- MENYJA KINEMA -----\n";
+        cout &lt;&lt; "1. Shfaq seancat\n";
+        cout &lt;&lt; "2. Rezervo vend\n";
+        cout &lt;&lt; "3. Anulo rezervim\n";
+        cout &lt;&lt; "0. Dil\n";
+        cout &lt;&lt; "Zgjedhja: ";
+        cin &gt;&gt; choice;
+
+        if (choice == 1) {
+            for (int i = 0; i &lt; NUM_SEANCES; i++) {
+                cout &lt;&lt; i+1 &lt;&lt; ". " &lt;&lt; seances[i].movieName
+                     &lt;&lt; " (" &lt;&lt; seances[i].time &lt;&lt; ")\n";
+            }
+            int sel;
+            cout &lt;&lt; "Zgjidh seancen: ";
+            cin &gt;&gt; sel;
+            if (sel &gt;= 1 &amp;&amp; sel &lt;= NUM_SEANCES)
+                showSeats(seances[sel - 1]);
+        }
+        else if (choice == 2) {
+            int sel;
+            cout &lt;&lt; "Zgjidh seancen:\n";
+            for (int i = 0; i &lt; NUM_SEANCES; i++) {
+                cout &lt;&lt; i+1 &lt;&lt; ". " &lt;&lt; seances[i].movieName &lt;&lt; " (" &lt;&lt; seances[i].time &lt;&lt; ")\n";
+            }
+            cout &lt;&lt; "Zgjedhja: ";
+            cin &gt;&gt; sel;
+
+            if (sel &lt; 1 || sel &gt; NUM_SEANCES) {
+                cout &lt;&lt; "Zgjedhje e pavlefshem!\n";
+                continue;
+            }
+
+            Seance &selected = seances[sel - 1];
+            showSeats(selected);
+
+            string name;
+            int row, col;
+            cout &lt;&lt; "Emri: ";
+            cin &gt;&gt; name;
+            cout &lt;&lt; "Rreshti (1-" &lt;&lt; ROWS &lt;&lt; "): ";
+            cin &gt;&gt; row;
+            cout &lt;&lt; "Kolona (1-" &lt;&lt; COLS &lt;&lt; "): ";
+            cin &gt;&gt; col;
+
+            reserveSeat(selected, row, col, name);
+        }
+        else if (choice == 3) {
+            int sel;
+            cout &lt;&lt; "Zgjidh seancen per anulim: ";
+            for (int i = 0; i &lt; NUM_SEANCES; i++) {
+                cout &lt;&lt; i+1 &lt;&lt; ". " &lt;&lt; seances[i].movieName &lt;&lt; " (" &lt;&lt; seances[i].time &lt;&lt; ")\n";
+            }
+            cout &lt;&lt; "Zgjedhja: ";
+            cin &gt;&gt; sel;
+
+            if (sel &lt; 1 || sel &gt; NUM_SEANCES) {
+                cout &lt;&lt; "Zgjedhje e pavlefshem!\n";
+                continue;
+            }
+
+            Seance &selected = seances[sel - 1];
+            showSeats(selected);
+
+            string name;
+            int row, col;
+            cout &lt;&lt; "Emri: ";
+            cin &gt;&gt; name;
+            cout &lt;&lt; "Rreshti: ";
+            cin &gt;&gt; row;
+            cout &lt;&lt; "Kolona: ";
+            cin &gt;&gt; col;
+
+            cancelReservation(selected, row, col, name);
+        }
+        else if (choice != 0) {
+            cout &lt;&lt; "Zgjedhje e pavlefshem!\n";
+        }
+
+    } while (choice != 0);
+
+    cout &lt;&lt; "Programi perfundoi. Faleminderit!\n";
+    return 0;
+}
+        </pre>
+      </div>
+
+      <div class="mt-6 text-center">
+        <button id="download-btn" class="bg-blue-700 text-white py-2 px-5 rounded text-base hover:bg-blue-600 cursor-pointer">Mer Kodin</button>
+      </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="mt-12 text-center text-gray-700">
+      <p>Krujar me ❤️ prej Grupit Tone .</p>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById('download-btn').addEventListener('click', function() {
+      const codeContent = document.getElementById('code-content').innerText;
+      const blob = new Blob([codeContent], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'code.txt';
+      link.click();
+    });
+  </script>
+
+</body>
+
+</html>
