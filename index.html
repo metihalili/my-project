@@ -48,6 +48,40 @@
       border: 1px solid #ddd;
       border-radius: 10px;
       background-color: #f9f9f9;
+      display: flex;
+      align-items: center;
+    }
+    
+    .ticket-image {
+  width: 150px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 5px;
+  margin-right: 20px;
+  border: 3px solid #3b82f6; /* Changed from black to blue */
+}
+    
+    .ticket-info {
+      flex: 1;
+      position: relative;
+    }
+    
+    .movie-poster {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .barcode {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 80px;
+      height: 120px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="120" viewBox="0 0 80 120"><rect width="80" height="120" fill="white"/><rect x="5" y="10" width="3" height="100" fill="black"/><rect x="10" y="10" width="1" height="100" fill="black"/><rect x="13" y="10" width="2" height="100" fill="black"/><rect x="17" y="10" width="4" height="100" fill="black"/><rect x="23" y="10" width="1" height="100" fill="black"/><rect x="26" y="10" width="3" height="100" fill="black"/><rect x="31" y="10" width="2" height="100" fill="black"/><rect x="35" y="10" width="1" height="100" fill="black"/><rect x="38" y="10" width="4" height="100" fill="black"/><rect x="44" y="10" width="2" height="100" fill="black"/><rect x="48" y="10" width="1" height="100" fill="black"/><rect x="51" y="10" width="3" height="100" fill="black"/><rect x="56" y="10" width="2" height="100" fill="black"/><rect x="60" y="10" width="1" height="100" fill="black"/><rect x="63" y="10" width="4" height="100" fill="black"/><rect x="69" y="10" width="2" height="100" fill="black"/><rect x="73" y="10" width="1" height="100" fill="black"/></svg>');
+      background-size: contain;
+      background-repeat: no-repeat;
     }
   </style>
 </head>
@@ -93,7 +127,11 @@ struct Seance {
 
     <div class="bg-white p-6 rounded-2xl shadow-md mb-6">
       <h2 class="text-2xl font-semibold mb-2 underline">🎟️ Shembull Biletë (Output File)</h2>
-      <pre class="bg-gray-100 p-3 rounded-md overflow-x-auto text-sm">
+      <div class="ticket-container">
+        <div class="ticket-image">
+          <img src="https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_.jpg" alt="Movie Poster" class="movie-poster">
+        </div>
+        <pre class="ticket-info bg-gray-100 p-3 rounded-md overflow-x-auto text-sm">
 -----------------------------
       🎬 BILETA KINEMA      
 -----------------------------
@@ -104,7 +142,8 @@ Rreshti:   2
 Karrigia:  3
 -----------------------------
   Faleminderit per rezervimin!
-      </pre>
+        </pre>
+      </div>
     </div>
 
     <div class="bg-white p-6 rounded-2xl shadow-md">
@@ -136,7 +175,7 @@ Karrigia:  3
           <!-- Movie Selection -->
           <div class="text-center">
             <label for="movies" class="text-lg">Zgjidhni Filmin:</label>
-            <select id="movies" class="mt-2 p-2 border border-gray-300 rounded-md mb-4">
+            <select id="movies" class="mt-2 p-2 border border-gray-300 rounded-md mb-4" onchange="movieChanged()">
               <option value="0">Avengers: Endgame</option>
               <option value="1">The Matrix</option>
             </select>
@@ -153,10 +192,15 @@ Karrigia:  3
           </div>
 
           <!-- Ticket Information and Download Button -->
-          <div id="ticket" class="ticket-container mt-6 text-center hidden">
-            <h3 class="text-xl font-semibold">Bileta juaj:</h3>
-            <pre id="ticket-info"></pre>
-            <button id="download-btn" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 mt-4">Shkarko Bileten</button>
+          <div id="ticket" class="ticket-container mt-6 hidden">
+            <div class="ticket-image">
+              <img id="ticket-poster" src="https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_.jpg" alt="Movie Poster" class="movie-poster">
+            </div>
+            <div class="ticket-info">
+              <pre id="ticket-info-text"></pre>
+              <div class="barcode"></div>
+              <button id="download-btn" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 mt-4">Shkarko Bileten</button>
+            </div>
           </div>
 
           <button onclick="closeReservation()" class="mt-4 text-white bg-red-600 hover:bg-red-700 font-medium rounded-lg text-sm px-5 py-2.5">Mbylle</button>
@@ -172,25 +216,52 @@ Karrigia:  3
     const COLS = 5;
 
     const movies = [
-      { name: 'Avengers: Endgame', time: '18:00' },
-      { name: 'The Matrix', time: '20:00' }
+      { 
+        name: 'Avengers: Endgame', 
+        time: '18:00',
+        poster: 'https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_.jpg'
+      },
+      { 
+        name: 'The Matrix', 
+        time: '20:00',
+        poster: 'https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_.jpg'
+      }
     ];
 
     let selectedMovie = 0;
     const seats = [
-      Array(ROWS).fill(Array(COLS).fill(false)),
-      Array(ROWS).fill(Array(COLS).fill(false))
+      Array(ROWS).fill().map(() => Array(COLS).fill(false)),
+      Array(ROWS).fill().map(() => Array(COLS).fill(false))
     ];
+    let selectedSeat = null;
 
     // Open reservation modal
     function openReservation() {
       document.getElementById('reservation-modal').classList.remove('hidden');
+      document.getElementById('ticket-poster').src = movies[selectedMovie].poster;
       showSeats();
     }
 
     // Close reservation modal
     function closeReservation() {
       document.getElementById('reservation-modal').classList.add('hidden');
+      document.getElementById('ticket').classList.add('hidden');
+      document.getElementById('username').value = '';
+      if (selectedSeat) {
+        selectedSeat.classList.remove('bg-yellow-400');
+        selectedSeat = null;
+      }
+    }
+
+    // When movie selection changes
+    function movieChanged() {
+      selectedMovie = parseInt(document.getElementById('movies').value);
+      document.getElementById('ticket-poster').src = movies[selectedMovie].poster;
+      if (selectedSeat) {
+        selectedSeat.classList.remove('bg-yellow-400');
+        selectedSeat = null;
+      }
+      showSeats();
     }
 
     // Show seats grid
@@ -203,19 +274,24 @@ Karrigia:  3
           const seat = document.createElement('div');
           seat.classList.add('seat', seats[selectedMovie][row][col] ? 'reserved' : 'available');
           seat.innerText = `${row + 1}-${col + 1}`;
-          seat.onclick = () => reserveSeat(row, col);
+          seat.onclick = () => selectSeat(seat, row, col);
           container.appendChild(seat);
         }
       }
     }
 
-    // Handle seat reservation
-    function reserveSeat(row, col) {
+    // Handle seat selection
+    function selectSeat(seatElement, row, col) {
       if (seats[selectedMovie][row][col]) return; // Seat already reserved
-
-      // Highlight the selected seat visually
-      const selectedSeat = document.querySelector(`#seats-container div:nth-child(${row * COLS + col + 1})`);
-      selectedSeat.classList.add('bg-yellow-400');
+      
+      // Remove highlight from previously selected seat
+      if (selectedSeat) {
+        selectedSeat.classList.remove('bg-yellow-400');
+      }
+      
+      // Highlight the new selected seat
+      seatElement.classList.add('bg-yellow-400');
+      selectedSeat = seatElement;
     }
 
     // Handle reservation when the user clicks the "Rezervo Vendin" button
@@ -226,7 +302,6 @@ Karrigia:  3
         return;
       }
 
-      const selectedSeat = document.querySelector('.bg-yellow-400');
       if (!selectedSeat) {
         alert('Ju lutem, zgjidhni një vend!');
         return;
@@ -239,27 +314,59 @@ Karrigia:  3
       seats[selectedMovie][row][col] = true; // Mark the seat as reserved
 
       const ticketInfo = `
-        Filmi: ${movies[selectedMovie].name}
-        Ora: ${movies[selectedMovie].time}
-        Rreshti: ${row + 1}
-        Karrigia: ${col + 1}
-        Rezervuar nga: ${username}
+-----------------------------
+      🎬 BILETA KINEMA      
+-----------------------------
+Emri:      ${username}
+Filmi:     ${movies[selectedMovie].name}
+Ora:       ${movies[selectedMovie].time}
+Rreshti:   ${row + 1}
+Karrigia:  ${col + 1}
+-----------------------------
+  Faleminderit per rezervimin!
       `;
-      document.getElementById('ticket-info').innerText = ticketInfo;
+      
+      document.getElementById('ticket-info-text').innerText = ticketInfo;
       document.getElementById('ticket').classList.remove('hidden');
-      document.getElementById('download-btn').classList.remove('hidden');
       showSeats();  // Update seat layout
     }
 
     // Generate PDF for ticket
-    document.getElementById('download-btn').onclick = function () {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const ticketInfo = document.getElementById('ticket-info').innerText;
+    // Generate PDF for ticket
+document.getElementById('download-btn').onclick = function () {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  // Add movie poster area with blue border
+  doc.setDrawColor(59, 130, 246); // Blue color
+  doc.setLineWidth(1.5);
+  doc.rect(10, 10, 40, 60, 'D'); // Draw border
+  doc.setTextColor(100, 100, 100);
+  doc.text(movies[selectedMovie].name, 30, 45, { align: 'center' });
+  
+  // Add ticket information
+  doc.setFontSize(16);
+  doc.text('BILETA KINEMA', 105, 20, { align: 'center' });
+  doc.setFontSize(12);
+  
+  const ticketInfo = document.getElementById('ticket-info-text').innerText;
+  const lines = ticketInfo.split('\n');
+  let y = 40;
+  lines.forEach(line => {
+    if (line.trim() === '') return;
+    doc.text(line.trim(), 105, y, { align: 'center' });
+    y += 7;
+  });
+  
+  // Add barcode
+  doc.setFontSize(8);
+  doc.text("||| || ||| | || |||", 170, 50);
+  doc.text("|| ||| || ||| || ||", 170, 55);
+  doc.text("||| || ||| | || |||", 170, 60);
+  doc.text("|| ||| || ||| || ||", 170, 65);
 
-      doc.text(ticketInfo, 10, 10);
-      doc.save('bileta.pdf');
-    }
+  doc.save('bileta.pdf');
+}
   </script>
 </body>
 
